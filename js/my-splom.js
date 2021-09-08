@@ -522,6 +522,7 @@ d3.csv('./data/Iris.csv', d3.autoType) // https://github.com/d3/d3-dsv#autoType
     }
 })
 function barchart(svg,data){
+
     let svgwidth = svg.style("width")
     let svgheight = svg.style("height")
     
@@ -530,7 +531,7 @@ function barchart(svg,data){
     
     svgheight = parseInt(svgheight)
     svgwidth = parseInt(svgwidth)
-    
+   
     if(svgheight < svgwidth)
         svgwidth = svgheight
 
@@ -545,8 +546,11 @@ function barchart(svg,data){
 
     let dataRange = d3.extent(data) 
 
+    svg
+      .attr("preserveAspectRatio","xMidyMid")
+      .attr("viewBox", [0, 0, 1000, 1000]);
 
-    xAScale = 0.8
+    xAScale = 0.2
 
     xIntMin = parseInt(dataRange[0])
 
