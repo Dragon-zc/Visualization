@@ -485,6 +485,7 @@ d3.csv('./data/Iris.csv', d3.autoType) // https://github.com/d3/d3-dsv#autoType
         if (d3.event.selection === null) return;
         d3.select("#barchart-canvas").selectAll("rect").remove()
         d3.select("#barchart-canvas").selectAll("g").remove()
+        d3.select("#barchart-canvas").selectAll("text").remove()
         const [[x0, y0], [x1, y1]] = d3.event.selection; 
         circle.classed("hidden", d => {
           return x0 > x[i](d[columns[i]])
@@ -515,47 +516,78 @@ d3.csv('./data/Iris.csv', d3.autoType) // https://github.com/d3/d3-dsv#autoType
         }
         d3.select("#barchart-canvas").selectAll("rect").remove()
         d3.select("#barchart-canvas").selectAll("g").remove()
+        d3.select("#barchart-canvas").selectAll("text").remove()
         circle.classed("hidden", false);
       }
     }
 })
 function barchart(svg,data){
-    svgwidth = svg.style("width")
-    svgheight = svg.style("height")
+    let svgwidth = svg.style("width")
+    let svgheight = svg.style("height")
+    
     svgwidth = svgwidth.replace("px","")
     svgheight = svgheight.replace("px","")
-    svgheight=parseInt(svgheight)
-    svgwidth=parseInt(svgwidth)
-    if(svgheight<svgwidth)
-        svgwidth=svgheight
+    
+    svgheight = parseInt(svgheight)
+    svgwidth = parseInt(svgwidth)
+    
+    if(svgheight < svgwidth)
+        svgwidth = svgheight
 
-    padding = svgwidth*0.125
+    console.log("svgwidth:",svgwidth)
 
-    width = svgwidth - padding*2
-    height = svgwidth - padding*2
+    let padding = parseInt(svgwidth*0.125)
+
+    let width = svgwidth - padding*2
+    let height = svgwidth - padding*2
 
     data.sort()
 
-    range = d3.extent(data) 
-    xIntRange = [parseInt(range[0]), parseInt(range[1])+1]
-    xtick = xIntRange[1] - xIntRange[0]
-    xAScale=0.9
-    x=xIntRange[0]
-    xAixsValue=[x]
-    for(let i =1;x<=xIntRange[1];i++,x=x+xAScale){
-        xAixsValue[i]= x+xAScale
+    let dataRange = d3.extent(data) 
+
+
+    xAScale = 0.8
+
+    xIntMin = parseInt(dataRange[0])
+
+    let num = (data[data.length-1] - xIntMin) / xAScale
+
+    xRange = [xIntMin,xIntMin+xAScale*(num+1)]
+    
+
+    x = parseInt(dataRange[0])
+    
+    xAixsValue=[]
+
+    for(let i =0;x<=xRange[1];i++,x=x+xAScale){
+        xAixsValue[i]= x
 
     }
-    xIntRange = [parseInt(range[0]), parseInt(xAixsValue[xAixsValue.length-1])+1]
+
+    let mark = parseInt(width/(xRange[1]-xRange[0])/10)
+    console.log("mark:",mark)
+    width = mark*(xRange[1]-xRange[0])*10
+    console.log("width:",width)
+
+    
     xRangeSize = [0,width]
-    let originXRight = svg.append("g").attr("transform", "translate("+(padding).toString()+","+(padding+width).toString()+")")
+    
     let xScale = d3.scaleLinear()
-                   .domain(xIntRange)
+                   .domain(xRange)
                     .rangeRound(xRangeSize)
     let xAxis = d3.axisBottom(xScale)
                     .tickValues(xAixsValue)
                    .tickSize(-2)
-    xAxis(originXRight)
+    let gR = svg.append("g")
+            .attr("class","rect")
+            .attr("transform", "translate("+(padding).toString()+","+(width+padding).toString()+")")
+    let gX = svg.append("g")
+                .attr("transform", "translate("+(padding).toString()+","+(width+padding).toString()+")")
+                .attr("class","xaxis")
+    let gY = svg.append("g")
+                .attr("transform", "translate("+(padding).toString()+","+(width+padding).toString()+")")
+                .attr("class","yaxis")
+    xAxis(gX)
     
 
     dataY = []
@@ -563,44 +595,54 @@ function barchart(svg,data){
     for(let i=0;i<dataY.length;i++){
         dataY[i]=0
     }
-    let xAxisValue = xIntRange[0]
+    let xAxisValue = xIntMin
 
     data.forEach(
         function(d){
-            // console.log(d)
-            // console.log(parseInt((d-xAxisValue)/0.5))
             dataY[parseInt((d-xAxisValue)/xAScale)]=dataY[parseInt((d-xAxisValue)/xAScale)]+1
                 
         }
     )
-    console.log(data)
-    console.log(dataY)
-    console.log(dataY.length)
+    // console.log(data)
+    // console.log(dataY)
+    // console.log(dataY.length)
     dataMerged = []
     for(let i=0; i<dataY.length; i++){
-        dataMerged[i]=[xIntRange[0]+i*xAScale, dataY[i]]
+        dataMerged[i]=[xRange[0]+i*xAScale, dataY[i]]
     }
     
     yIntRange = [0,d3.extent(dataY) [1]]
 
-    yRangeSize = [width,0]
+    yRangeSize = [0,-width]
     ytick = yIntRange[1] - yIntRange[0]
-    let originYRight = svg.append("g").attr("transform", "translate("+(padding).toString()+","+(padding).toString()+")")
+    
     let yScale = d3.scaleLinear()
                     .domain(yIntRange)
                     .rangeRound(yRangeSize)
     let yAxis = d3.axisLeft(yScale)
                     .ticks(ytick)
                     .tickSize(-2)
-    yAxis(originYRight)
+    yAxis(gY)
     console.log(dataMerged)
 
-    var rect=svg.selectAll("rect")
+    var rect=gR.selectAll("rect")
         .data(dataMerged)
         .join("rect")
         .attr("fill","steelblue")
-        .attr("x",d=> padding+xScale(d[0]))
-        .attr("y",d=> padding+yScale(d[1]))
-        .attr("width",width/xAixsValue.length)
-        .attr("height",d=>width-yScale(d[1]))
+        .attr("x",d => 1+(d[0]-xRange[0])*mark*10)
+        .attr("y",d => yScale(d[1]))
+        .attr("width",d=>10*mark*xAScale-2)
+        .attr("height", d=> -yScale(d[1]))
+    xtext=svg.append("text")
+              .text("scale")
+              .attr("class","xtext")
+              .attr("x",padding+width)
+              .attr("y",padding+width+10)
+
+    ytext=svg.append("text")
+            .text("quantity")
+            .attr("x",padding)
+            .attr("y",padding) 
+            .attr("transform", "rotate(90deg)")
+
 }
