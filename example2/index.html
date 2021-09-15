@@ -42,7 +42,7 @@
 		width: 100%; 
 		height: 90%;
 		top: 10%;
-		background-color: orange;
+		background-color: white;
 	}
 	.picture-scatterplot-svg {
 		position: absolute;
@@ -54,12 +54,13 @@
 	}
 	.play-button {
 		position: absolute;
+		left: 2%;
 		top: 91%;
 		width: 6vh;
 		height: 6%;
-		background-size: 100% 100%;
 		border-radius:50%;
 		border: none;
+
 	}
 	.time-meter {
 		position: absolute;
@@ -78,6 +79,12 @@
 
   		<div class="picture-scatterplot-div">
   			<svg class="picture-scatterplot-svg">
+  				<g class="yaxis-text-g">
+  					<text class="yaxis-text"></text>
+  				</g>
+  				<g class="xaxis-text-g">
+  					<text class="xaxis-text"></text>
+  				</g>
   				<g class="time-g">
   					<text class="time-text" ></text>
   				</g>
@@ -88,8 +95,8 @@
   				<g class="circle-g">
   				</g>
   			</svg>
-  			<button class="play-button" onclick="clickPlay()"></button>
-  			<meter class="time-meter"onclick=""></meter>
+  			<img class="play-button" src="./picture/play.png" onclick="clickPlay()"></img>
+  			<meter class="time-meter" onmouseup="mouseupMeter()" onmousedown="mousedownMeter()" ondrag="mousemoveMeter()"></meter>
   		</div>
 
   	</div>

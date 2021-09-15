@@ -14,108 +14,42 @@ Promise.all([
     // files[2] will contain fileNameThree
     // files[3] will contain fileNameFour
 
-    svg = d3.select(".picture-scatterplot-svg")
-    let svgwidth = svg.style("width")
-    let svgheight = svg.style("height")
-    svgwidth = svgwidth.replace("px", "")
-    svgheight = svgheight.replace("px", "")
-    svgheight = parseInt(svgheight)
-    svgwidth = parseInt(svgwidth)
-
-    let paddingWidth = parseInt(svgwidth * 0.1)
-    let paddingHeight = parseInt(svgheight * 0.1)
-    let coordinateWidth = parseInt(svgwidth * 0.8)
-    let coordinateHeight = parseInt(svgheight * 0.8)
-
+    //remove "country" columns
     let species = "country"
     let columnsFileOne = files[0].columns.filter(d => d !== species)
     let columnsFileTwo = files[1].columns.filter(d => d !== species)
     let columnsFileThree = files[2].columns.filter(d => d !== species)
     let columnsFileFour = files[3].columns.filter(d => d !== species)
 
+    //get svg
+    svg = d3.select(".picture-scatterplot-svg")
+
+    //get svgwidth
+    let svgwidth = svg.style("width")
+    svgwidth = svgwidth.replace("px", "")
+    svgwidth = parseInt(svgwidth)
+
+    //get svgheight
+    let svgheight = svg.style("height")
+    svgheight = svgheight.replace("px", "")
+    svgheight = parseInt(svgheight)
+
+    //initialize paddingWidth paddingHeight coordinateWidth coordinateHeight
+    let paddingWidth = parseInt(svgwidth * 0.1)
+    let paddingHeight = parseInt(svgheight * 0.1)
+    let coordinateWidth = parseInt(svgwidth * 0.8)
+    let coordinateHeight = parseInt(svgheight * 0.8)
+
+    //set time parameter
+    let yearStarted = 1800
+    let yearNum = 200
+
+    //processing data, gets the basic range of the axis
     let dataMaxFileOne = 0
     let dataMaxFileTwo = 0
     let dataMaxFileThree = 0
-
-    let yearStarted = 1800
-    let yearNum = 200
     let dataTotal = dataProcessAll(files, yearStarted, yearNum)
 
-    xTicks = 10
-    yTicks = 10
-
-    coordinateWidthEvery = parseInt(coordinateWidth / xTicks)
-    coordinateWidth = coordinateWidthEvery * (xTicks)
-
-    coordinateHeightEvery = parseInt(coordinateHeight / yTicks)
-    coordinateHeight = coordinateHeightEvery * yTicks
-
-    xAxisMax = (dataMaxFileOne % xTicks) === 0 ? dataMaxFileOne : ((parseInt(dataMaxFileOne / xTicks) + 1) * xTicks)
-    let xScale = []
-    for (let i = 0; i <= xTicks; i++) {
-        xScale.push(i * xAxisMax / xTicks)
-    }
-    gxAxis = d3.select(".xaxis-g")
-        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
-    let xDomainRange = d3.scaleLinear()
-        .domain([0, xAxisMax])
-        .rangeRound([0, coordinateWidth])
-    let xAxis = d3.axisBottom(xDomainRange)
-        .tickValues(xScale)
-        .tickSize(-coordinateHeight)
-    xAxis(gxAxis)
-
-    yAxisMax = (dataMaxFileTwo % yTicks) === 0 ? dataMaxFileTwo : ((parseInt(dataMaxFileTwo / yTicks) + 1) * yTicks)
-    let yScale = []
-    for (let i = 0; i <= yTicks; i++) {
-        yScale.push(i * yAxisMax / yTicks)
-    }
-    gyAxis = d3.select(".yaxis-g")
-        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
-    let yDomainRange = d3.scaleLinear()
-        .domain([0, yAxisMax])
-        .rangeRound([0, -coordinateHeight])
-    let yAxis = d3.axisLeft(yDomainRange)
-        .tickValues(yScale)
-        .tickSize(-coordinateWidth)
-    yAxis(gyAxis)
-
-    d3.selectAll(".tick line").style("stroke", "#ddd")
-
-    // let zSizeMap = d3.scaleLog()
-    //                     .base(2)
-    //                     .domain([2,2**27])
-    //                     .rangeRound([0,30])
-    let zSizeMap = d3.scaleLinear()
-        .domain([0, dataMaxFileThree])
-        .rangeRound([4, 100])
-    gcircle = d3.select(".circle-g")
-        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
-
-    let colors = d3.scaleOrdinal()
-        .domain([1, 2, 3, 4])
-        .range(d3.schemeCategory10)
-
-    let textTime = d3.select(".time-text")
-        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
-        .style("fill", "#ddd")
-    let textTimeSize = coordinateHeight * 0.8
-
-    var interval = 0
-    var iter = 0
-    let buttonTime = d3.select(".play-button")
-                        .style("left",parseInt(paddingWidth*0.1).toString()+"px")
-    let meterTime = d3.select(".time-meter")
-                    .attr("min",0)
-                    .attr("max",yearNum)
-                    .attr("value",0)
-                    .style("width",coordinateWidth.toString()+"px")
-                    .style("left",paddingWidth.toString()+"px")
-
-    clickPlay = function() {   
-        interval = setInterval(function(){circleYearDraw()}, 100)
-
-    }
     function dataProcess(d) {
         if (d === "null")
             return 0;
@@ -155,14 +89,138 @@ Promise.all([
         }
         return dataTotal
     }
-    
+
+    //set number of scales
+    xTicks = 10
+    yTicks = 10
+
+    //exact coordinate length
+    coordinateWidthEvery = parseInt(coordinateWidth / xTicks)
+    coordinateWidth = coordinateWidthEvery * (xTicks)
+    coordinateHeightEvery = parseInt(coordinateHeight / yTicks)
+    coordinateHeight = coordinateHeightEvery * yTicks
+
+    //precise coordinate scale
+    xAxisMax = (dataMaxFileOne % xTicks) === 0 ? dataMaxFileOne : ((parseInt(dataMaxFileOne / xTicks) + 1) * xTicks)
+    yAxisMax = (dataMaxFileTwo % yTicks) === 0 ? dataMaxFileTwo : ((parseInt(dataMaxFileTwo / yTicks) + 1) * yTicks)
+
+    //draw x axis
+    let xScale = []
+    for (let i = 0; i <= xTicks; i++) {
+        xScale.push(i * xAxisMax / xTicks)
+    }
+    gxAxis = d3.select(".xaxis-g")
+        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
+    let xDomainRange = d3.scaleLinear()
+        .domain([0, xAxisMax])
+        .rangeRound([0, coordinateWidth])
+    let xAxis = d3.axisBottom(xDomainRange)
+        .tickValues(xScale)
+        .tickSize(-coordinateHeight)
+    xAxis(gxAxis)
+
+    //draw y axis
+    let yScale = []
+    for (let i = 0; i <= yTicks; i++) {
+        yScale.push(i * yAxisMax / yTicks)
+    }
+    gyAxis = d3.select(".yaxis-g")
+        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
+    let yDomainRange = d3.scaleLinear()
+        .domain([0, yAxisMax])
+        .rangeRound([0, -coordinateHeight])
+    let yAxis = d3.axisLeft(yDomainRange)
+        .tickValues(yScale)
+        .tickSize(-coordinateWidth)
+    yAxis(gyAxis)
+
+    //change axis scale coler
+    d3.selectAll(".tick line").style("stroke", "#ddd")
+
+    //set circle radius,color and initial coordinates 
+    let zSizeMap = d3.scaleLinear()
+        .domain([0, dataMaxFileThree])
+        .rangeRound([4, 100])
+    gcircle = d3.select(".circle-g")
+        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
+    let colors = d3.scaleOrdinal()
+        .domain([1, 2, 3, 4])
+        .range(d3.schemeCategory10)
+
+    //set text time style
+    let textTime = d3.select(".time-text")
+        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
+        .style("fill", "#ddd")
+    let textTimeSize = coordinateHeight * 0.8
+
+    //set aixs text
+    let textxAixs = d3.select(".xaxis-text")
+        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")")
+        .text("Income")
+        .attr("x", coordinateWidth / 2)
+        .attr("y", paddingHeight / 3)
+    let textyAixs = d3.select(".yaxis-text")
+        .attr("transform", "translate(" + (paddingWidth).toString() + "," + (coordinateHeight + paddingHeight).toString() + ")" + "rotate(90" + (-(paddingWidth) / 2).toString() + "," + (-coordinateHeight / 2).toString() + ")")
+        .text("Life")
+        .attr("x", -(paddingWidth) / 2)
+        .attr("y", -coordinateHeight / 2)
+
+    var interval = 0
+    var iter = 0
+    let buttonTime = d3.select(".play-button")
+        .style("left", parseInt(paddingWidth * 0.2).toString() + "px")
+    let meterTime = d3.select(".time-meter")
+        .attr("min", 0)
+        .attr("max", yearNum)
+        .attr("value", 0)
+        .style("width", coordinateWidth.toString() + "px")
+        .style("left", paddingWidth.toString() + "px")
+    var sw = false
+    clickPlay = function() {
+        if (sw === false) {
+            sw = true
+
+            buttonTime.attr("src", "./picture/pause.png")
+            interval = setInterval(function() {
+                circleYearDraw()
+            }, 100)
+        } else {
+            sw = false
+            buttonTime.attr("src", "./picture/play.png")
+            clearInterval(interval)
+        }
+    }
+    mouseupMeter = function() {
+        let event = window.event || arguments.callee.caller.arguments[0]
+        iter = parseInt(event.offsetX / coordinateWidth * yearNum)
+        if (sw === true)
+            interval = setInterval(function() {
+                circleYearDraw()
+            }, 100)
+        else
+            circleYearDraw()
+    }
+    mousemoveMeter = function() {
+        let event = window.event || arguments.callee.caller.arguments[0]
+        console.log("2")
+        iter = parseInt(event.offsetX / coordinateWidth * yearNum)
+        meterTime.attr("value", iter)
+    }
+    mousedownMeter = function() {
+        let event = window.event || arguments.callee.caller.arguments[0]
+        iter = parseInt(event.offsetX / coordinateWidth * yearNum)
+        meterTime.attr("value", iter)
+        clearInterval(interval)
+
+    }
+
     function circleYearDraw() {
         textTime.text((yearStarted + iter).toString())
             .attr("x", coordinateWidth / 4)
             .attr("y", -coordinateHeight / 3)
             .style("font-size", (coordinateHeight / 3).toString() + "px")
             .style("fill-opacity", 0.4)
-        meterTime.attr("value",iter)
+        meterTime.attr("value", iter)
         gcircle.selectAll("circle")
             .data(dataTotal)
             .join(
@@ -182,8 +240,8 @@ Promise.all([
             .style("fill-opacity", 0.5)
 
         iter = iter + 1
-        if(iter>yearNum)
-            clearInterval(interval)     
+        if (iter > yearNum)
+            clearInterval(interval)
     }
 
     // console.log("dataTotal:", dataTotal)
